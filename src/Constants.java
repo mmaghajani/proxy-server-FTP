@@ -12,9 +12,11 @@ public class Constants {
 
     public static String OK = "Command OK\n";
 
-    public static String FILE_NAME_NOT_ALLOWED = "File name not allowed\n";
+    public static String FILE_NOT_EXISTS = "File not exists\n";
 
     public static String CANT_OPEN_DATA_CONNECTION = "Can't open data connection\n";
 
     public static String COMMAND_NOT_IMPLEMENTED = "Command not implemented\n";
+
+    public static String CACHE_FOLDER = "./files/";
 }

@@ -8,7 +8,7 @@ import java.net.UnknownHostException;
  */
 public class ServerPI implements Runnable {
     private Socket connection;
-    private boolean loggedIn = false;
+    private boolean loggedIn = true;
     private String username = "";
     private String password = "";
 
@@ -60,11 +60,14 @@ public class ServerPI implements Runnable {
                         break;
                     case "RMD":
                         if (loggedIn){
-                            File index = new File("/files");
-                            String[]entries = index.list();
-                            for(String s: entries){
-                                File currentFile = new File(index.getPath(),s);
-                                currentFile.delete();
+                            File index = new File(Constants.CACHE_FOLDER);
+                            System.out.println(index);
+                            File[] entries = index.listFiles();
+                            System.out.println(entries);
+                            if( entries != null ) {
+                                for (File f : entries) {
+                                    f.delete();
+                                }
                             }
                             outToClient.writeBytes("200 " + Constants.OK);
                         }else{
@@ -74,12 +77,12 @@ public class ServerPI implements Runnable {
                     case "DELE":
                         if(loggedIn){
                             String filename = parameter;
-                            File index = new File("/files/" + filename);
+                            File index = new File(Constants.CACHE_FOLDER + filename);
                             if(index.exists()) {
                                 index.delete();
                                 outToClient.writeBytes("200 " + Constants.OK);
                             }else{
-                                outToClient.writeBytes("553 " + Constants.FILE_NAME_NOT_ALLOWED);
+                                outToClient.writeBytes("553 " + Constants.FILE_NOT_EXISTS);
                             }
                         }else{
                             outToClient.writeBytes("530 " + Constants.NOT_LOGGED_IN);
@@ -88,7 +91,7 @@ public class ServerPI implements Runnable {
                     case "RETR":
                         if(loggedIn){
                             String filename = parameter;
-                            File index = new File("/file/" + filename);
+                            File index = new File(Constants.CACHE_FOLDER + filename);
                             if(index.exists()){
                                 outToClient.writeBytes("200 " + Constants.OK);
                                 ServerDTP serverDTP = new ServerDTP(connection);
@@ -102,7 +105,7 @@ public class ServerPI implements Runnable {
                                 String response = sendHTTPRequestToServer(request);
                                 String contentType = getContentTypeFromResponse(response);
                                 String body = getBodyFromResponse(response);
-                                File file = new File("/files/" + filename+"."+contentType);
+                                File file = new File(Constants.CACHE_FOLDER + filename+"."+contentType);
                                 file.createNewFile();
                                 PrintWriter out = new PrintWriter(new FileOutputStream(file));
                                 out.write(body);
