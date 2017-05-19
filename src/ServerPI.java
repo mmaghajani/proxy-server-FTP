@@ -87,10 +87,16 @@ public class ServerPI implements Runnable {
                                         "Connection: Close\r\n"+
                                         "\r\n";
                                 String response = sendHTTPRequestToServer(request);
-                                if(response != null ) {
+                                String contentType = getContentTypeFromResponse(response);
+                                String body = getBodyFromResponse(response);
+                                File file = new File("/files/" + filename+"."+contentType);
+                                file.createNewFile();
+                                PrintWriter out = new PrintWriter(new FileOutputStream(file));
+                                out.write(body);
+                                if(body != null ) {
                                     outToClient.writeBytes("200 " + Constants.OK);
                                     ServerDTP serverDTP = new ServerDTP(connection);
-                                    serverDTP.sendString(response);
+                                    serverDTP.sendFile(file);
                                 }else{
                                     outToClient.writeBytes("425 " + Constants.CANT_OPEN_DATA_CONNECTION);
                                 }
@@ -125,6 +131,14 @@ public class ServerPI implements Runnable {
             e.printStackTrace();
         }
 
+    }
+
+    private String getBodyFromResponse(String response) {
+        return null;
+    }
+
+    private String getContentTypeFromResponse(String response) {
+        return null;
     }
 
     private String sendHTTPRequestToServer(String request) {
