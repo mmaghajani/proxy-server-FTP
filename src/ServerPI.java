@@ -11,6 +11,7 @@ public class ServerPI implements Runnable {
     private boolean loggedIn = true;
     private String username = "";
     private String password = "";
+    private int dataConnectionPort = 0 ;
 
     public ServerPI(Socket connection) {
         this.connection = connection;
@@ -93,9 +94,13 @@ public class ServerPI implements Runnable {
                             String filename = parameter;
                             File index = new File(Constants.CACHE_FOLDER + filename);
                             if(index.exists()){
-                                outToClient.writeBytes("200 " + Constants.OK);
-                                ServerDTP serverDTP = new ServerDTP(connection);
-                                serverDTP.sendFile(index);
+                                ServerDTP serverDTP = new ServerDTP(connection,dataConnectionPort);
+                                try{
+                                    serverDTP.sendFile(index);
+                                    outToClient.writeBytes("200 " + Constants.OK);
+                                }catch (IOException e){
+                                    outToClient.writeBytes("425 " + Constants.CANT_OPEN_DATA_CONNECTION);
+                                }
                             }else{
                                 String request = "GET /~94131090/CN1_Project_Files/" + filename +
                                         " HTTP/1.1\r\n" +
@@ -111,8 +116,13 @@ public class ServerPI implements Runnable {
                                 out.write(body);
                                 if(body != null ) {
                                     outToClient.writeBytes("200 " + Constants.OK);
-                                    ServerDTP serverDTP = new ServerDTP(connection);
-                                    serverDTP.sendFile(file);
+                                    ServerDTP serverDTP = new ServerDTP(connection,dataConnectionPort);
+                                    try{
+                                        serverDTP.sendFile(index);
+                                        outToClient.writeBytes("200 " + Constants.OK);
+                                    }catch (IOException e){
+                                        outToClient.writeBytes("425 " + Constants.CANT_OPEN_DATA_CONNECTION);
+                                    }
                                 }else{
                                     outToClient.writeBytes("425 " + Constants.CANT_OPEN_DATA_CONNECTION);
                                 }
@@ -129,9 +139,13 @@ public class ServerPI implements Runnable {
                                     "\r\n";
                             String response = sendHTTPRequestToServer(request);
                             if(response != null ) {
-                                outToClient.writeBytes("200 " + Constants.OK);
-                                ServerDTP serverDTP = new ServerDTP(connection);
-                                serverDTP.sendString(response);
+                                ServerDTP serverDTP = new ServerDTP(connection,dataConnectionPort);
+                                try{
+                                    serverDTP.sendString(response);
+                                    outToClient.writeBytes("200 " + Constants.OK);
+                                }catch (IOException e){
+                                    outToClient.writeBytes("425 " + Constants.CANT_OPEN_DATA_CONNECTION);
+                                }
                             }else{
                                 outToClient.writeBytes("425 " + Constants.CANT_OPEN_DATA_CONNECTION);
                             }
@@ -139,6 +153,15 @@ public class ServerPI implements Runnable {
                             outToClient.writeBytes("530 " + Constants.NOT_LOGGED_IN);
                         }
                         break;
+                    case "PORT":
+                        dataConnectionPort = Integer.parseInt(parameter);
+                        if( dataConnectionPort > 1023 ){
+                            outToClient.writeBytes("200 " + Constants.OK);
+                        }else{
+                            dataConnectionPort = 0;
+                            outToClient.writeBytes("200 " + Constants.CANT_OPEN_DATA_CONNECTION);
+                        }
+                        break ;
                     case "QUIT":
                         connection.close();
                         break outerLoop;
@@ -440,7 +463,10 @@ public class ServerPI implements Runnable {
     private String sendHTTPRequestToServer(String request) {
         InetAddress addr = null;
         try {
-            addr = InetAddress.getByName("http://ceit.aut.ac.ir");
+//            byte[] ipAddr = new byte[]{217, 219, 236, 129};
+//            addr = InetAddress.getByAddress(ipAddr);
+            addr = InetAddress.getByName("217.219.236.129");
+            System.out.println(addr);
             Socket socket = null;
             try {
                 socket = new Socket(addr, 80);
