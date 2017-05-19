@@ -10,7 +10,7 @@ import java.net.UnknownHostException;
  */
 public class ServerPI implements Runnable {
     private Socket connection;
-    private boolean loggedIn = true;
+    private boolean loggedIn = false;
     private String username = "";
     private String password = "";
     private int dataConnectionPort = 0 ;
