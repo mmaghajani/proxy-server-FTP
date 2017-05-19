@@ -1,0 +1,6 @@
+Type: Connect To Server, Command: PASS, Status: User logged in
+, Username: root
+Type: Connect To Server, Command: USER, Status: Username OK, password required
+, Username: root
+Type: Connect To Server, Command: PASS, Status: User logged in
+, Username: root

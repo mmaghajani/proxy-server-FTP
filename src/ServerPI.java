@@ -1,5 +1,3 @@
-import sun.rmi.runtime.Log;
-
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -37,12 +35,17 @@ public class ServerPI implements Runnable {
                     case "USER":
                         if(!loggedIn) {
                             username = parameter;
-                            if (username.equals("root"))
+                            if (username.equals("root")) {
                                 outToClient.writeBytes("331 " + Constants.PASSWORD_REQUIRED);
-                            else
+                                Logger.getInstance().logForClient("USER",Constants.PASSWORD_REQUIRED, username);
+                            }
+                            else {
                                 outToClient.writeBytes("332 " + Constants.NEED_ACCOUNT);
+                                Logger.getInstance().logForClient("USER",Constants.NEED_ACCOUNT, username);
+                            }
                         }else{
                             outToClient.writeBytes("230 " + Constants.LOGGED_IN);
+                            Logger.getInstance().logForClient("USER",Constants.LOGGED_IN, username);
                         }
                         break;
                     case "PASS":
@@ -50,14 +53,18 @@ public class ServerPI implements Runnable {
                             password = parameter;
                             if (username.equals("root") && password.equals("toor")) {
                                 outToClient.writeBytes("230 " + Constants.LOGGED_IN);
+                                Logger.getInstance().logForClient("PASS",Constants.LOGGED_IN,username );
                                 loggedIn = true;
                             } else if (username.equals("root") && !password.equals("toor")) {
+                                Logger.getInstance().logForClient("PASS",Constants.PASSWORD_REQUIRED, username);
                                 username = "";
                                 outToClient.writeBytes("331 " + Constants.PASSWORD_REQUIRED);
                             } else {
+                                Logger.getInstance().logForClient("PASS",Constants.NEED_ACCOUNT, username);
                                 outToClient.writeBytes("332 " + Constants.NEED_ACCOUNT);
                             }
                         }else{
+                            Logger.getInstance().logForClient("PASS",Constants.LOGGED_IN, username);
                             outToClient.writeBytes("230 " + Constants.LOGGED_IN);
                         }
                         break;
@@ -73,7 +80,9 @@ public class ServerPI implements Runnable {
                                 }
                             }
                             outToClient.writeBytes("200 " + Constants.OK);
+                            Logger.getInstance().logForClient("RMD",Constants.OK, username);
                         }else{
+                            Logger.getInstance().logForClient("RMD",Constants.NOT_LOGGED_IN, username);
                             outToClient.writeBytes("530 " + Constants.NOT_LOGGED_IN);
                         }
                         break;
@@ -83,11 +92,14 @@ public class ServerPI implements Runnable {
                             File index = new File(Constants.CACHE_FOLDER + filename);
                             if(index.exists()) {
                                 index.delete();
+                                Logger.getInstance().logForClient("DELE",Constants.OK, username);
                                 outToClient.writeBytes("200 " + Constants.OK);
                             }else{
+                                Logger.getInstance().logForClient("DELE",Constants.FILE_NOT_EXISTS, username);
                                 outToClient.writeBytes("553 " + Constants.FILE_NOT_EXISTS);
                             }
                         }else{
+                            Logger.getInstance().logForClient("DELE",Constants.NOT_LOGGED_IN, username);
                             outToClient.writeBytes("530 " + Constants.NOT_LOGGED_IN);
                         }
                         break;
@@ -99,8 +111,10 @@ public class ServerPI implements Runnable {
                                 ServerDTP serverDTP = new ServerDTP(connection,dataConnectionPort);
                                 try{
                                     serverDTP.sendFile(index);
+                                    Logger.getInstance().logForClient("RETR",Constants.OK, username);
                                     outToClient.writeBytes("200 " + Constants.OK);
                                 }catch (IOException e){
+                                    Logger.getInstance().logForClient("RETR",Constants.OK, username);
                                     outToClient.writeBytes("425 " + Constants.CANT_OPEN_DATA_CONNECTION);
                                 }
                             }else{
@@ -119,18 +133,22 @@ public class ServerPI implements Runnable {
                                     ServerDTP serverDTP = new ServerDTP(connection,dataConnectionPort);
                                     try{
                                         serverDTP.sendFile(file);
+                                        Logger.getInstance().logForServer("RETR",Constants.OK, username);
                                         outToClient.writeBytes("200 " + Constants.OK);
                                     }catch (IOException e){
                                         e.printStackTrace();
+                                        Logger.getInstance().logForServer("RETR",Constants.CANT_OPEN_DATA_CONNECTION, username);
                                         outToClient.writeBytes("425 " + Constants.CANT_OPEN_DATA_CONNECTION);
                                         System.out.println("128");
                                     }
                                 }else{
                                     outToClient.writeBytes("425 " + Constants.CANT_OPEN_DATA_CONNECTION);
+                                    Logger.getInstance().logForServer("RETR",Constants.CANT_OPEN_DATA_CONNECTION, username);
                                     System.out.println("132");
                                 }
                             }
                         }else{
+                            Logger.getInstance().logForClient("RETR",Constants.NOT_LOGGED_IN, username);
                             outToClient.writeBytes("530 " + Constants.NOT_LOGGED_IN);
                         }
                         break;
@@ -145,30 +163,38 @@ public class ServerPI implements Runnable {
                                 ServerDTP serverDTP = new ServerDTP(connection,dataConnectionPort);
                                 try{
                                     serverDTP.sendString(response);
+                                    Logger.getInstance().logForServer("LIST",Constants.OK, username);
                                     outToClient.writeBytes("200 " + Constants.OK);
                                 }catch (IOException e){
+                                    Logger.getInstance().logForServer("LIST",Constants.CANT_OPEN_DATA_CONNECTION, username);
                                     outToClient.writeBytes("425 " + Constants.CANT_OPEN_DATA_CONNECTION);
                                 }
                             }else{
+                                Logger.getInstance().logForServer("LIST",Constants.CANT_OPEN_DATA_CONNECTION, username);
                                 outToClient.writeBytes("425 " + Constants.CANT_OPEN_DATA_CONNECTION);
                             }
                         }else{
+                            Logger.getInstance().logForClient("LIST",Constants.NOT_LOGGED_IN, username);
                             outToClient.writeBytes("530 " + Constants.NOT_LOGGED_IN);
                         }
                         break;
                     case "PORT":
                         dataConnectionPort = Integer.parseInt(parameter);
                         if( dataConnectionPort > 1023 ){
+                            Logger.getInstance().logForClient("PORT",Constants.OK, username);
                             outToClient.writeBytes("200 " + Constants.OK);
                         }else{
                             dataConnectionPort = 0;
-                            outToClient.writeBytes("200 " + Constants.CANT_OPEN_DATA_CONNECTION);
+                            Logger.getInstance().logForClient("PORT",Constants.CANT_OPEN_DATA_CONNECTION, username);
+                            outToClient.writeBytes("425 " + Constants.CANT_OPEN_DATA_CONNECTION);
                         }
                         break ;
                     case "QUIT":
+                        Logger.getInstance().logForClient("QUIT",Constants.OK, username);
                         connection.close();
                         break outerLoop;
                     default:
+                        Logger.getInstance().logForClient(command,Constants.COMMAND_NOT_IMPLEMENTED, username);
                         outToClient.writeBytes("502 " + Constants.COMMAND_NOT_IMPLEMENTED);
                 }
             }
