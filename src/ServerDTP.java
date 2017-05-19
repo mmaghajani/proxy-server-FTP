@@ -31,7 +31,6 @@ public class ServerDTP {
         Socket clientSocket = null;
 
         clientSocket = new Socket(connection.getInetAddress(), portNum);
-        while (true) {
             System.out.println("Waiting...");
             try {
                 // send file
@@ -48,7 +47,6 @@ public class ServerDTP {
                 if (bis != null) bis.close();
                 if (os != null) os.close();
             }
-        }
     }
 
 }

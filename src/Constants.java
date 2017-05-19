@@ -19,4 +19,6 @@ public class Constants {
     public static String COMMAND_NOT_IMPLEMENTED = "Command not implemented\n";
 
     public static String CACHE_FOLDER = "./files/";
+
+    public static String SERVER_ADDRESS = "217.219.236.129";
 }
