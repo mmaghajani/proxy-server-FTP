@@ -34,7 +34,7 @@ public class Logger {
     }
 
     public void logForClient(String command, String status, String username){
-        String log = "Type: Connect To Server, Command: " + command + ", Status: " + status + ", Username: " + username;
+        String log = "Type: Client Activity, Command: " + command + ", Status: " + status + ", Username: " + username;
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file , true);
