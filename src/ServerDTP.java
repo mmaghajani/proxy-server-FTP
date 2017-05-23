@@ -19,6 +19,8 @@ public class ServerDTP {
         DataOutputStream outToClient = new DataOutputStream(
                 clientSocket.getOutputStream());
         outToClient.writeBytes(response + "\n");
+        outToClient.flush();
+        outToClient.close();
         clientSocket.close();
         System.err.println("Connection Closed!");
 
