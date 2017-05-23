@@ -44,6 +44,7 @@ public class ServerDTP {
                 System.out.println("Sending " + file.getName() + "(" + mybytearray.length + " bytes)");
                 os.write(mybytearray, 0, mybytearray.length);
                 os.flush();
+                os.close();
                 System.out.println("Done.");
             } finally {
                 if (bis != null) bis.close();

@@ -108,6 +108,7 @@ public class ServerPI implements Runnable {
                             String filename = parameter;
                             File index = new File(Constants.CACHE_FOLDER + filename);
                             if(index.exists()){
+                                System.out.println("man residam");
                                 ServerDTP serverDTP = new ServerDTP(connection,dataConnectionPort);
                                 try{
                                     serverDTP.sendFile(index);
@@ -191,7 +192,7 @@ public class ServerPI implements Runnable {
                         break ;
                     case "QUIT":
                         Logger.getInstance().logForClient("QUIT",Constants.OK, username);
-                        connection.close();
+//                        connection.close();
                         break outerLoop;
                     default:
                         Logger.getInstance().logForClient(command,Constants.COMMAND_NOT_IMPLEMENTED, username);
